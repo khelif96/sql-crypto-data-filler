@@ -1,0 +1,15 @@
+{
+  "name": "sql-crypto-data-filler",
+  "version": "1.0.0",
+  "description": "A Simple Node Script to pull data from the CryptoCompare Api and populate an SQL server with that data",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
+  },
+  "author": "Mohamed Khelif",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.18.0"
+  }
+}
