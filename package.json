@@ -10,6 +10,8 @@
   "author": "Mohamed Khelif",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.18.0"
+    "axios": "^0.18.0",
+    "dotenv": "^5.0.1",
+    "mysql": "^2.15.0"
   }
 }
