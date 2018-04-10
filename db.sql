@@ -1,43 +1,61 @@
-create TABLE coins(
-    coin_id int AUTO_INCREMENT PRIMARY KEY, 
-    symbol varchar(10), 
-    name varchar(255));
 
-create TABLE exchanges(
-    id int AUTO_INCREMENT PRIMARY KEY, 
-    name varchar(255),
-    region varchar(255));
+CREATE TABLE exchanges (
+name VARCHAR(10) NOT NULL,
+region VARCHAR(10) NOT NULL,
+exchange_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY
+);
 
-create TABLE coinexchanges(
-    id int AUTO_INCREMENT PRIMARY KEY, 
-    coin_id int, 
-    exchange_id int);
 
-create TABLE wallets(
-    walletID varchar(255) PRIMARY KEY,  
-    balance_type varchar(225), 
-    value int) ENGINE = InnoDB;
+CREATE TABLE coins (
+symbol VARCHAR(5) NOT NULL,
+name VARCHAR(30) NOT NULL,
+coin_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY
+);
 
-create TABLE priceFeed(
-    price_feedID INT,
-    price int,
-    coins int,
-    exchange int, 
-    time_date DATETIME,
-    FOREIGN KEY (price_feedID) REFERENCES coins(coin_id),
-    FOREIGN KEY (exchange) REFERENCES exchanges(id)
-) ENGINE = InnoDB;
 
-create TABLE transactions(
-    transactionID int AUTO_INCREMENT PRIMARY KEY,
-    coin_type varchar(255), coin int,   
-    transactionPrice int, 
-    transactionQty int, 
-    transactionTotal int,
-    price_feedID int,
-    originWallet varchar(255), 
-    destinationWallet varchar(255),
-    FOREIGN KEY (originWallet) REFERENCES wallets(walletID),
-    FOREIGN KEY (destinationWallet) REFERENCES wallets(walletID)
-) ENGINE = InnoDB;
+CREATE TABLE price_feed (
+coin INT,
+price FLOAT NOT NULL,
+date DATETIME NOT NULL,
+exchange INT,
+priceFeed_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 
+FOREIGN KEY (coin) REFERENCES coins(coin_id),
+FOREIGN KEY (exchange) REFERENCES exchanges(exchange_id)
+);
+
+
+
+CREATE TABLE wallets (
+type VARCHAR(5) NOT NULL,
+value FLOAT NOT NULL,
+wallet_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY
+);
+
+
+CREATE TABLE transactions (
+transaction_id int AUTO_INCREMENT PRIMARY KEY,
+type ENUM('Buy', 'Sell') NOT NULL,
+transactionPrice FLOAT NOT NULL,
+transactionQty INT NOT NULL,
+transactionTotal INT NOT NULL,
+priceFeed_id INT,
+originWallet INT,
+destinationWallet INT,
+
+FOREIGN KEY (priceFeed_id) REFERENCES price_feed(priceFeed_id),
+FOREIGN KEY (originWallet) REFERENCES wallets(wallet_id),
+FOREIGN KEY (destinationWallet) REFERENCES wallets(wallet_id)
+);
+
+
+CREATE TABLE coinexchanges (
+id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+coin_id INT,
+exchange_id INT,
+
+FOREIGN KEY (coin_id) REFERENCES coins(coin_id),
+FOREIGN KEY (exchange_id) REFERENCES exchanges(exchange_id)
+);
+
+create view V_coinexchanges as select ce.id as 'Coin Exchange id', c.name as 'Coin Name', e.name as 'Exchange Name' from coins c inner join coinexchanges ce on ce.coin_id = c.coin_id inner join exchanges e on e.exchange_id = ce.exchange_id;
