@@ -1,9 +1,3 @@
-create TABLE coins (coin_id int AUTO_INCREMENT PRIMARY KEY, symbol varchar(10), name varchar(255));
-create TABLE exchanges (id int auto_increment primary key, name varchar(255),region varchar(255));
-create TABLE coinexchanges (id int auto_increment primary key, coin_id int, exchange_id int);
-
-
-///Satyam
 CREATE TABLE exchanges (
 name VARCHAR(10) NOT NULL,
 region VARCHAR(10) NOT NULL,
@@ -53,7 +47,7 @@ FOREIGN KEY (destinationWallet) REFERENCES wallets(walletID)
 );
 
 
-CREATE TABLE coin_exchange (
+CREATE TABLE coinexchanges (
 id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 coin_id INT,
 exchange_id INT,
