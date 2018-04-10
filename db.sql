@@ -1,3 +1,4 @@
+
 CREATE TABLE exchanges (
 name VARCHAR(10) NOT NULL,
 region VARCHAR(10) NOT NULL,
