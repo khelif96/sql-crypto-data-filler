@@ -1,4 +1,3 @@
-
 CREATE TABLE exchanges (
 name VARCHAR(10) NOT NULL,
 region VARCHAR(10) NOT NULL,
@@ -58,4 +57,12 @@ FOREIGN KEY (coin_id) REFERENCES coins(coin_id),
 FOREIGN KEY (exchange_id) REFERENCES exchanges(exchange_id)
 );
 
-create view V_coinexchanges as select ce.id as 'Coin Exchange id', c.name as 'Coin Name', c.symbol as 'symbol', e.name as 'Exchange Name' from coins c inner join coinexchanges ce on ce.coin_id = c.coin_id inner join exchanges e on e.exchange_id = ce.exchange_id;
+create view V_coinexchanges 
+    as select ce.id 
+    as 'Coin Exchange id', c.name 
+    as 'Coin Name', c.symbol 
+    as 'symbol', e.name 
+    as 'Exchange Name' from coins c 
+        inner join coinexchanges ce on ce.coin_id = c.coin_id 
+        inner join exchanges e on e.exchange_id = ce.exchange_id;
+
