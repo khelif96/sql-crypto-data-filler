@@ -155,3 +155,5 @@ insert into coinexchanges(coin_id,exchange_id) values (6,9);
 -- insert into coinexchanges(coin_id,exchange_id) values (17,10);
 -- insert into coinexchanges(coin_id,exchange_id) values (18,10);
 -- insert into coinexchanges(coin_id,exchange_id) values (19,10);
+
+insert into wallets (type,value) values ('USD', 50000);
