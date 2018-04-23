@@ -15,7 +15,7 @@ coin_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY
 CREATE TABLE price_feed (
 coin INT,
 price FLOAT NOT NULL,
-date DATETIME NOT NULL,
+date DATETIME NOT NULL default CURRENT_TIMESTAMP(),
 exchange INT,
 priceFeed_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 
@@ -57,12 +57,13 @@ FOREIGN KEY (coin_id) REFERENCES coins(coin_id),
 FOREIGN KEY (exchange_id) REFERENCES exchanges(exchange_id)
 );
 
-create view V_coinexchanges 
-    as select ce.id 
-    as 'Coin Exchange id', c.name 
-    as 'Coin Name', c.symbol 
-    as 'symbol', e.name 
-    as 'Exchange Name' from coins c 
-        inner join coinexchanges ce on ce.coin_id = c.coin_id 
+create view V_coinexchanges
+    as select ce.id
+    as 'Coin Exchange id', c.name
+    as 'Coin Name', c.symbol
+    as 'symbol', e.name
+    as 'Exchange Name',
+    c.coin_id as 'coin_id',
+    e.exchange_id as 'exchange_id' from coins c
+        inner join coinexchanges ce on ce.coin_id = c.coin_id
         inner join exchanges e on e.exchange_id = ce.exchange_id;
-
