@@ -23,8 +23,6 @@ FOREIGN KEY (coin) REFERENCES coins(coin_id),
 FOREIGN KEY (exchange) REFERENCES exchanges(exchange_id)
 );
 
-
-
 CREATE TABLE wallets (
 exchange INT,
 coin INT,
@@ -176,6 +174,4 @@ price = the price the coin was bought at in US Dollars
 also we need to output to dollars, so there ought to be two new attributes
 fiat_start = the money we started with in the initial state
 fiat_now = the amount of money in the account now (should be 0 if there's any BTC in the exchange)
-
-to get the total amoun of money after the l
 */

@@ -1,0 +1,84 @@
++------------------------+
+| Tables_in_local_crypto |
++------------------------+
+| V_coinexchanges        |
+| coinexchanges          |
+| coins                  |
+| exchanges              |
+| price_feed             |
+| transactions           |
+| wallets                |
++------------------------+
+
++------------------+------------------+------+-----+---------+-------+
+| Field            | Type             | Null | Key | Default | Extra |
++------------------+------------------+------+-----+---------+-------+
+| Coin Exchange id | int(10) unsigned | NO   |     | 0       |       |
+| Coin Name        | varchar(30)      | NO   |     | NULL    |       |
+| symbol           | varchar(5)       | NO   |     | NULL    |       |
+| Exchange Name    | varchar(10)      | NO   |     | NULL    |       |
++------------------+------------------+------+-----+---------+-------+
+
++------------------+------------------+------+-----+---------+-------+
+| Field            | Type             | Null | Key | Default | Extra |
++------------------+------------------+------+-----+---------+-------+
+| Coin Exchange id | int(10) unsigned | NO   |     | 0       |       |
+| Coin Name        | varchar(30)      | NO   |     | NULL    |       |
+| symbol           | varchar(5)       | NO   |     | NULL    |       |
+| Exchange Name    | varchar(10)      | NO   |     | NULL    |       |
++------------------+------------------+------+-----+---------+-------+
+
++-------------+------------------+------+-----+---------+----------------+
+| Field       | Type             | Null | Key | Default | Extra          |
++-------------+------------------+------+-----+---------+----------------+
+| id          | int(10) unsigned | NO   | PRI | NULL    | auto_increment |
+| coin_id     | int(11)          | YES  | MUL | NULL    |                |
+| exchange_id | int(11)          | YES  | MUL | NULL    |                |
++-------------+------------------+------+-----+---------+----------------+
+
++---------+-------------+------+-----+---------+----------------+
+| Field   | Type        | Null | Key | Default | Extra          |
++---------+-------------+------+-----+---------+----------------+
+| symbol  | varchar(5)  | NO   |     | NULL    |                |
+| name    | varchar(30) | NO   |     | NULL    |                |
+| coin_id | int(11)     | NO   | PRI | NULL    | auto_increment |
++---------+-------------+------+-----+---------+----------------+
+
++-------------+-------------+------+-----+---------+----------------+
+| Field       | Type        | Null | Key | Default | Extra          |
++-------------+-------------+------+-----+---------+----------------+
+| name        | varchar(10) | NO   |     | NULL    |                |
+| region      | varchar(10) | NO   |     | NULL    |                |
+| exchange_id | int(11)     | NO   | PRI | NULL    | auto_increment |
++-------------+-------------+------+-----+---------+----------------+
+
++--------------+----------+------+-----+---------+----------------+
+| Field        | Type     | Null | Key | Default | Extra          |
++--------------+----------+------+-----+---------+----------------+
+| coin         | int(11)  | YES  | MUL | NULL    |                |
+| price        | float    | NO   |     | NULL    |                |
+| date         | datetime | NO   |     | NULL    |                |
+| exchange     | int(11)  | YES  | MUL | NULL    |                |
+| priceFeed_id | int(11)  | NO   | PRI | NULL    | auto_increment |
++--------------+----------+------+-----+---------+----------------+
+
++-------------------+--------------------+------+-----+---------+----------------+
+| Field             | Type               | Null | Key | Default | Extra          |
++-------------------+--------------------+------+-----+---------+----------------+
+| transaction_id    | int(11)            | NO   | PRI | NULL    | auto_increment |
+| type              | enum('Buy','Sell') | NO   |     | NULL    |                |
+| transactionPrice  | float              | NO   |     | NULL    |                |
+| transactionQty    | int(11)            | NO   |     | NULL    |                |
+| transactionTotal  | int(11)            | NO   |     | NULL    |                |
+| priceFeed_id      | int(11)            | YES  | MUL | NULL    |                |
+| originWallet      | int(11)            | YES  | MUL | NULL    |                |
+| destinationWallet | int(11)            | YES  | MUL | NULL    |                |
++-------------------+--------------------+------+-----+---------+----------------+
+
++-----------+------------+------+-----+---------+----------------+
+| Field     | Type       | Null | Key | Default | Extra          |
++-----------+------------+------+-----+---------+----------------+
+| type      | varchar(5) | NO   |     | NULL    |                |
+| value     | float      | NO   |     | NULL    |                |
+| wallet_id | int(11)    | NO   | PRI | NULL    | auto_increment |
++-----------+------------+------+-----+---------+----------------+
