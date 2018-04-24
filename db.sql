@@ -69,6 +69,9 @@ create view V_coinexchanges
         inner join exchanges e on e.exchange_id = ce.exchange_id;
 
 
+UPDATE wallet
+SET wallet.fiat_start = 1;
+
 CREATE FUNCTION Compare_Current_to_Bought (/*no inputs*/) 
 RETURNS BOOLEAN
 AS
@@ -82,13 +85,13 @@ BEGIN
 			FROM price_feed
 			WHERE exchange = latest_price.exchange
 		)
-	)
+	);
 
 	SET @price_bought = (
 		SELECT price
 		FROM wallet
 		WHERE coin = latest_price.coin
-	)
+	);
 
 	RETURN @current_price > @price_bought;
 END
@@ -118,16 +121,42 @@ WHEN(
 		
 	/*The price of coin in your current exchange had to increase or stay the same (so you can make a profit when you sell within the exchange.)*/
 	AND Compare_Current_to_Bought() = true
-		/*see the top of the page*/
-	
 
 	/*The price of your bitcoin on your exchange had to increase relative to another fund (so you can reinvest your earnings and buy discounted coins from a cheaper exchange.)*/
 	AND latest_price.price < (
 		SELECT price
 		FROM wallet
-		WHERE latest_price.coin = wallet.coin)
+		WHERE latest_price.coin = wallet.coin
+	)
 )
+BEGIN
 
+	SET @current_exchange_price = (
+			SELECT price
+			FROM price_feed
+			WHERE coin=latest_price.coin 
+			AND date = (
+				SELECT max(date)
+				FROM price_feed
+				WHERE exchange = latest_price.exchange
+		)
+	);
+
+	SET @amount = (
+		SELECT amount
+		FROM wallet
+		WHERE coin = latest_price.coin		
+	);
+
+	SET @money_made = (@current_exchange_price * @amount);
+
+	SET @new_amount = (@money_made / latest_price.price);
+
+	UPDATE wallet 
+	SET wallet.exchange = latest_price.exchange, wallet.amount = @new_amount, wallet.price = latest_price.price
+	WHERE wallet.coin = latest_price.coin;
+
+END
 /*
 Viewing the wallet table as the relation describing one (and only one) person's holdings, 
 the rows correspond to different amount-currency-exchange-price combinations.
@@ -138,4 +167,10 @@ amount = amount of coin
 coin = type of coin
 exchange = the exchange the coin was bought on
 price = the price the coin was bought at in US Dollars
+
+also we need to output to dollars, so there ought to be two new attributes
+fiat_start = the money we started with in the initial state
+fiat_now = the amount of money in the account now (should be 0 if there's any BTC in the exchange)
+
+to get the total amoun of money after the l
 */
