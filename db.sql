@@ -26,7 +26,21 @@ FOREIGN KEY (exchange) REFERENCES exchanges(exchange_id)
 
 
 CREATE TABLE wallets (
-type VARCHAR(5) NOT NULL,
+exchange_id INT,
+coin INT,
+price INT,
+amount INT,
+wallet_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY
+
+FOREIGN KEY (exchange_id) REFERENCES exchanges(exchange_id),
+FOREIGN KEY (coin) REFERENCES coins(coin_id),
+);
+
+
+FOREIGN KEY (exchange_id) REFERENCES exchanges(exchange_id),
+FOREIGN KEY (coin) REFERENCES coins(coin_id)
+
+coin VARCHAR(5) NOT NULL UNIQUE,
 value FLOAT NOT NULL,
 wallet_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY
 );
