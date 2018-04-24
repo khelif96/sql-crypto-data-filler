@@ -29,7 +29,7 @@ CREATE TABLE wallets (
 exchange INT,
 coin INT,
 price FLOAT NOT NULL,
-amount INT,
+amount FLOAT NOT NULL,
 wallet_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 
 FOREIGN KEY (exchange) REFERENCES exchanges(exchange_id),
