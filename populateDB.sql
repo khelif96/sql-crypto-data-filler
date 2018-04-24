@@ -22,12 +22,9 @@ insert into exchanges(name,region) values('Bitfinex', 'BVI');
 insert into exchanges(name,region) values('Kraken', 'USA');
 insert into exchanges(name,region) values('Coinbase', 'USA');
 insert into exchanges(name,region) values('HitBTC', 'UK');
-insert into exchanges(name,region) values('coinone', 'SK');
-insert into exchanges(name,region) values('Bithumb', 'SK');
 insert into exchanges(name,region) values('Bittrex', 'USA');
 insert into exchanges(name,region) values('Quoine', 'JPN');
 insert into exchanges(name,region) values('bitFlyer', 'JPN');
-insert into exchanges(name,region) values('Binance', 'CN');
 
 
 insert into coinexchanges(coin_id,exchange_id) values (1,1);
