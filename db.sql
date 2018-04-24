@@ -67,3 +67,75 @@ create view V_coinexchanges
     e.exchange_id as 'exchange_id' from coins c
         inner join coinexchanges ce on ce.coin_id = c.coin_id
         inner join exchanges e on e.exchange_id = ce.exchange_id;
+
+
+CREATE FUNCTION Compare_Current_to_Bought (/*no inputs*/) 
+RETURNS BOOLEAN
+AS
+BEGIN
+	SET @current_price = (
+		SELECT price
+		FROM price_feed
+		WHERE coin=latest_price.coin 
+		AND date = (
+			SELECT max(date)
+			FROM price_feed
+			WHERE exchange = latest_price.exchange
+		)
+	)
+
+	SET @price_bought = (
+		SELECT price
+		FROM wallet
+		WHERE coin = latest_price.coin
+	)
+
+	RETURN @current_price > @price_bought;
+END
+
+
+CREATE TRIGGER
+AFTER INSERT ON price_feed
+REFERENCING NEW ROW AS latest_price
+FOR EACH ROW
+WHEN(
+
+	/*You have the latest_price.coin in your wallet and the amount (of coin) is more than zero*/
+	EXISTS latest_price.coin IN(
+		SELECT * 
+		FROM wallet
+		WHERE wallet.coin = latest_price.coin 
+		AND amount>0
+	)
+
+	/*You have coins in some other exchange that you can use to buy discounted coins from the latest_price.exchange*/
+	AND EXISTS(
+		SELECT *
+		FROM wallet
+		WHERE wallet.coin = latest_price.coin 
+		AND wallet.exchange<>latest_price.exchange
+	)
+		
+	/*The price of coin in your current exchange had to increase or stay the same (so you can make a profit when you sell within the exchange.)*/
+	AND Compare_Current_to_Bought() = true
+		/*see the top of the page*/
+	
+
+	/*The price of your bitcoin on your exchange had to increase relative to another fund (so you can reinvest your earnings and buy discounted coins from a cheaper exchange.)*/
+	AND latest_price.price < (
+		SELECT price
+		FROM wallet
+		WHERE latest_price.coin = wallet.coin)
+)
+
+/*
+Viewing the wallet table as the relation describing one (and only one) person's holdings, 
+the rows correspond to different amount-currency-exchange-price combinations.
+
+personal wallet
+------
+amount = amount of coin
+coin = type of coin
+exchange = the exchange the coin was bought on
+price = the price the coin was bought at in US Dollars
+*/
