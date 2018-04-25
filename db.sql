@@ -28,6 +28,8 @@ exchange INT,
 coin INT,
 price FLOAT NOT NULL,
 amount FLOAT NOT NULL,
+fiat_now FLOAT NOT NULL,
+fiat_start FLOAT NOT NULL,
 wallet_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 
 FOREIGN KEY (exchange) REFERENCES exchanges(exchange_id),
@@ -72,31 +74,60 @@ create view V_coinexchanges
         inner join exchanges e on e.exchange_id = ce.exchange_id;
 
 
-UPDATE wallet
-SET wallet.fiat_start = 1;
+/*Add $5 to each coin-row of the wallets (total amount of cash in wallets = the number of coins * $5)*/
+UPDATE wallets
+SET wallets.fiat_start = 5, wallets.fiat_now = 5;
 
-CREATE FUNCTION Compare_Current_to_Bought (/*no inputs*/) 
+/*Subtract from the fiat_now to begin transaction & buy first coin. fiat_start is a record of our initial state,
+while fiat_now is how many dollars are held in account for a particular coin.*/
+UPDATE wallets
+SET wallets.amount = Buy_First_Coin (wallets.fiat_now,wallets.coin), wallets.fiat_now = 0;
+
+/*This function uses the intial amount of money. Necessary step before initiating the trading algorithm.*/
+CREATE FUNCTION Buy_First_Coin (@fiat_now FLOAT, @coin INT)
+RETURNS FLOAT
+BEGIN
+	SET @current_price = (
+		SELECT price
+		FROM price_feed
+		WHERE price_feed.coin = @coin
+		AND price = (
+			SELECT min(price)
+			FROM price_feed
+			WHERE price_feed.coin = @coin
+		)
+	);
+
+	SET @amount = (@fiat_now / @current_price);
+
+	RETURN @ amount;
+END
+
+/*Utility Function for the trigger Finds if price of coin in your current exchange had to increase or stay the same 
+(so you can make a profit when you sell within the exchange.)*/
+CREATE FUNCTION Compare_Current_to_Bought (@latest_price_coin INT, @latest_price_exchange INT) 
 RETURNS BOOLEAN
 AS
 BEGIN
 	SET @current_price = (
 		SELECT price
 		FROM price_feed
-		WHERE coin=latest_price.coin 
+		WHERE coin = @latest_price_coin 
 		AND date = (
-			SELECT max(date)
-			FROM price_feed
-			WHERE exchange = latest_price.exchange
+			SELECT max(price_feed.date)
+			FROM price_feed, wallets
+			WHERE price_feed.exchange = wallets.exchange
+			AND price_feed.coin = wallets.coin 
 		)
 	);
 
 	SET @price_bought = (
 		SELECT price
-		FROM wallet
-		WHERE coin = latest_price.coin
+		FROM wallets
+		WHERE coin = @latest_price_coin
 	);
 
-	RETURN @current_price > @price_bought;
+	RETURN (@current_price > @price_bought);
 END
 
 
@@ -106,30 +137,30 @@ REFERENCING NEW ROW AS latest_price
 FOR EACH ROW
 WHEN(
 
-	/*You have the latest_price.coin in your wallet and the amount (of coin) is more than zero*/
+	/*You have the latest_price.coin in your wallets and the amount (of coin) is more than zero*/
 	EXISTS latest_price.coin IN(
 		SELECT * 
-		FROM wallet
-		WHERE wallet.coin = latest_price.coin 
+		FROM wallets
+		WHERE wallets.coin = latest_price.coin 
 		AND amount>0
 	)
 
 	/*You have coins in some other exchange that you can use to buy discounted coins from the latest_price.exchange*/
 	AND EXISTS(
 		SELECT *
-		FROM wallet
-		WHERE wallet.coin = latest_price.coin 
-		AND wallet.exchange<>latest_price.exchange
+		FROM wallets
+		WHERE wallets.coin = latest_price.coin 
+		AND wallets.exchange<>latest_price.exchange
 	)
 		
 	/*The price of coin in your current exchange had to increase or stay the same (so you can make a profit when you sell within the exchange.)*/
-	AND Compare_Current_to_Bought() = true
+	AND Compare_Current_to_Bought(latest_price.coin, latest_price.exchange) = true
 
 	/*The price of your bitcoin on your exchange had to increase relative to another fund (so you can reinvest your earnings and buy discounted coins from a cheaper exchange.)*/
 	AND latest_price.price < (
 		SELECT price
-		FROM wallet
-		WHERE latest_price.coin = wallet.coin
+		FROM wallets
+		WHERE latest_price.coin = wallets.coin
 	)
 )
 BEGIN
@@ -147,24 +178,25 @@ BEGIN
 
 	SET @amount = (
 		SELECT amount
-		FROM wallet
+		FROM wallets
 		WHERE coin = latest_price.coin		
 	);
 
+	/*Temporary variable for fiat_now*/
 	SET @money_made = (@current_exchange_price * @amount);
 
 	SET @new_amount = (@money_made / latest_price.price);
 
-	UPDATE wallet 
-	SET wallet.exchange = latest_price.exchange, wallet.amount = @new_amount, wallet.price = latest_price.price
-	WHERE wallet.coin = latest_price.coin;
+	UPDATE wallets 
+	SET wallets.exchange = latest_price.exchange, wallets.amount = @new_amount, wallets.price = latest_price.price
+	WHERE wallets.coin = latest_price.coin;
 
 END
 /*
-Viewing the wallet table as the relation describing one (and only one) person's holdings, 
+Viewing the wallets table as the relation describing one (and only one) person's holdings, 
 the rows correspond to different amount-currency-exchange-price combinations.
 
-personal wallet
+personal wallets
 ------
 amount = amount of coin
 coin = type of coin
@@ -175,3 +207,5 @@ also we need to output to dollars, so there ought to be two new attributes
 fiat_start = the money we started with in the initial state
 fiat_now = the amount of money in the account now (should be 0 if there's any BTC in the exchange)
 */
+
+/*mysql --port 3307 --socket=/opt/mariadb-data/mariadb.sock -u'peter' -p'xxxxxx' -h134.74.126.107*/
