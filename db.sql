@@ -91,6 +91,7 @@ email nikita@cs.cuny.edu
 send barnett the schema for the database and the code for the storedprocedure
 */
 DELIMITER //
+
 CREATE PROCEDURE Buy_First_Coin (
 	IN cash FLOAT, 
 	IN coin_type INT, 
@@ -105,24 +106,30 @@ BEGIN
 			SELECT min(price)
 			FROM price_feed
 			WHERE price_feed.coin = coin_type
-		)
+		);
 	);
 
-	SET amount = cash/@current_price;
-END //
+	SET amount = cash / @current_price;
+END
+
+//
 
 DELIMITER;
 
 /*Add $5 to each coin-row of the wallets (total amount of cash in wallets = the number of coins * $5)*/
-UPDATE wallets
-SET wallets.fiat_start = 5, wallets.fiat_now = 5;
+UPDATE wallets SET wallets.fiat_start = 5, wallets.fiat_now = 5;
 
 /*Subtract from the fiat_now to begin transaction & buy first coin. fiat_start is a record of our initial state,
 while fiat_now is how many dollars are held in account for a particular coin.*/
 CALL Buy_First_Coin (wallets.fiat_now, wallets.coin, wallets.amount);
 
-UPDATE wallets
-SET wallets.fiat_now = 0;
+UPDATE wallets SET wallets.fiat_now = 0;
+
+UPDATE wallets SET wallets.coin = (
+	SELECT DISTINCT coin_id
+	FROM coins
+	ORDER BY coin_id;
+);
 
 -- /*Utility Function for the trigger Finds if price of coin in your current exchange had to increase or stay the same 
 -- (so you can make a profit when you sell within the exchange.)*/
