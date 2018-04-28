@@ -1,0 +1,33 @@
+ERROR 1305 (42000) at line 83 in file: '/media/david/Drive/Binder/Csc_336/Assignments/Group Project/Code/sql-crypto-data-filler/db.sql': FUNCTION local_crypto.Buy_First_Coin does not exist
+
+ERROR 1064 (42000) at line 87 in file: '/media/david/Drive/Binder/Csc_336/Assignments/Group Project/Code/sql-crypto-data-filler/db.sql': You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '@fiat_now FLOAT, @coin INT)
+RETURNS FLOAT
+BEGIN
+	SET @current_price = (
+		SELECT' at line 1
+Query OK, 0 rows affected (0.00 sec)
+
+ERROR 1064 (42000) at line 103 in file: '/media/david/Drive/Binder/Csc_336/Assignments/Group Project/Code/sql-crypto-data-filler/db.sql': You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'RETURN @ amount' at line 1
+
+ERROR 1064 (42000) at line 104 in file: '/media/david/Drive/Binder/Csc_336/Assignments/Group Project/Code/sql-crypto-data-filler/db.sql': You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'END
+
+
+CREATE FUNCTION Compare_Current_to_Bought (@latest_price_coin INT, @latest' at line 1
+Query OK, 0 rows affected (0.00 sec)
+
+ERROR 1064 (42000) at line 130 in file: '/media/david/Drive/Binder/Csc_336/Assignments/Group Project/Code/sql-crypto-data-filler/db.sql': You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'RETURN (@current_price > @price_bought)' at line 1
+
+ERROR 1064 (42000) at line 131 in file: '/media/david/Drive/Binder/Csc_336/Assignments/Group Project/Code/sql-crypto-data-filler/db.sql': You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'END
+
+
+CREATE TRIGGER
+AFTER INSERT ON price_feed
+REFERENCING NEW ROW AS latest_pr' at line 1
+ERROR 1054 (42S22) at line 179 in file: '/media/david/Drive/Binder/Csc_336/Assignments/Group Project/Code/sql-crypto-data-filler/db.sql': Unknown column 'latest_price.coin' in 'where clause'
+Query OK, 0 rows affected (0.01 sec)
+
+ERROR 1109 (42S02) at line 188 in file: '/media/david/Drive/Binder/Csc_336/Assignments/Group Project/Code/sql-crypto-data-filler/db.sql': Unknown table 'latest_price' in field list
+
+ERROR 1054 (42S22) at line 190 in file: '/media/david/Drive/Binder/Csc_336/Assignments/Group Project/Code/sql-crypto-data-filler/db.sql': Unknown column 'latest_price.coin' in 'where clause'
+
+ERROR 1064 (42000) at line 194 in file: '/media/david/Drive/Binder/Csc_336/Assignments/Group Project/Code/sql-crypto-data-filler/db.sql': You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'END' at line 1
