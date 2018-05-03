@@ -1,5 +1,4 @@
 /*Add $5 to each coin-row of the wallets (total amount of cash in wallets = the number of coins * $5)*/
---UPDATE wallets SET wallets.fiat_start = 5, wallets.fiat_now = 5;
 DELIMITER //
 
 CREATE PROCEDURE Init_Wallets()
@@ -7,9 +6,12 @@ BEGIN
 	SET @i = 1;
 
 	SET @coin_count = (
-		SELECT DISTINCT count(coin_id)
-		FROM coinexchanges
-		ORDER BY coin_id
+		SELECT count(coin_id)
+		FROM(
+			SELECT DISTINCT coin_id
+			FROM coinexchanges
+			ORDER BY coin_id
+		) AS distinct_coins_used
 	);
 
   	WHILE @i <= @coin_count DO
@@ -24,12 +26,9 @@ DELIMITER ;
 CALL Init_Wallets();
 
 /*The coin value in each row should correspond to a different coin from the coins table*/
-UPDATE wallets 
-SET wallets.coin = (
-	SELECT DISTINCT coin_id
-	FROM coinexchanges
-	ORDER BY coin_id
-);
+UPDATE wallets, coinexchanges
+SET wallets.coin = coinexchanges.coin_id
+WHERE wallets.wallet_id = coinexchanges.coin_id;
 
 /*This procedure uses the intial amount of money to purchase coin. Necessary step before initiating the trading algorithm.*/
 DELIMITER //
@@ -241,4 +240,3 @@ Query OK, 0 rows affected (0.01 sec)
 ERROR 1193 (HY000) at line 66 in file: 'storedProc.sql': Unknown system variable 'coin_id'
 ERROR 1305 (42000) at line 89 in file: 'storedProc.sql': PROCEDURE crypto.Table_Buy_First_Coin does not exist
 
-*/
