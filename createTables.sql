@@ -1,3 +1,6 @@
+CREATE DATABASE crypto;
+USE crypto;
+
 CREATE TABLE exchanges (
 name VARCHAR(10) NOT NULL,
 region VARCHAR(10) NOT NULL,
@@ -23,12 +26,17 @@ FOREIGN KEY (coin) REFERENCES coins(coin_id),
 FOREIGN KEY (exchange) REFERENCES exchanges(exchange_id)
 );
 
-
-
 CREATE TABLE wallets (
-type VARCHAR(5) NOT NULL,
-value FLOAT NOT NULL,
-wallet_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY
+exchange INT,
+coin INT,
+price FLOAT NOT NULL,
+amount FLOAT NOT NULL,
+fiat_now FLOAT NOT NULL,
+fiat_start FLOAT NOT NULL,
+wallet_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+
+FOREIGN KEY (exchange) REFERENCES exchanges(exchange_id),
+FOREIGN KEY (coin) REFERENCES coins(coin_id)
 );
 
 
