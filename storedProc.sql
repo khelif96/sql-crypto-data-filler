@@ -1,30 +1,49 @@
 /*Add $5 to each coin-row of the wallets (total amount of cash in wallets = the number of coins * $5)*/
 --UPDATE wallets SET wallets.fiat_start = 5, wallets.fiat_now = 5;
-DELIMITER //
+-- DELIMITER //
+--
+-- CREATE PROCEDURE Init_Wallets()
+-- BEGIN
+-- 	SET @i = 1;
+--
+-- 	SET @coin_count = (
+-- 		SELECT DISTINCT count(coin_id)
+-- 		FROM coins
+-- 		ORDER BY coin_id
+-- 	);
+--
+--   	WHILE @i <= @coin_count DO
+--   		SET @i = @i + 1;
+--     	INSERT INTO wallets (amount, price, fiat_start, fiat_now) VALUES (0,0,5,5);
+-- 	END WHILE;
+-- END;
+-- //
+--
+-- DELIMITER ;
+--
+-- CALL Init_Wallets();
 
-CREATE PROCEDURE Init_Wallets()
-BEGIN
-	SET @i = 1;
+DELIMiTER //
 
-	SET @coin_count = (
-		SELECT DISTINCT count(coin_id)
-		FROM coins
-		ORDER BY coin_id
-	);
+create procedure init_wallets()
+begin
+        declare coin_id int;
+        set coin_id = 0;
+        declare cur cursor for select distinct coin_id from coinexchanges;
+        open cur;
+                fetch next from cur into @coin_id
+        while @@FETCH_STATUS = 0 begin
+                insert into wallets (coin_id,amount,price,fiat_start,fiat_now) values (coin_id,0,0,5,5);
+                fetch next from cur into @coin_id;
+        end while;
 
-  	WHILE @i <= @coin_count DO
-  		SET @i = @i + 1;
-    	INSERT INTO wallets (amount, price, fiat_start, fiat_now) VALUES (0,0,5,5);
-	END WHILE;
-END;
+end;
 //
 
-DELIMITER ;
-
-CALL Init_Wallets();
+delimiter ;
 
 /*The coin value in each row should correspond to a different coin from the coins table*/
-UPDATE wallets 
+UPDATE wallets
 SET wallets.coin = (
 	SELECT DISTINCT coin_id
 	FROM coins
@@ -35,8 +54,8 @@ SET wallets.coin = (
 DELIMITER //
 
 CREATE PROCEDURE Row_Buy_First_Coin (
-	IN cash FLOAT, 
-	IN coin_type INT 
+	IN cash FLOAT,
+	IN coin_type INT
 )
 BEGIN
 	SET @buy_price = (
@@ -52,7 +71,7 @@ BEGIN
 
 	SET @amount = cash / @buy_price;
 
-	UPDATE wallets 
+	UPDATE wallets
 		SET wallets.amount = @amount
 		WHERE wallets.coin = coin_type;
 END;
@@ -94,14 +113,14 @@ CALL Table_Buy_First_Coin();
 DELIMITER //
 
 CREATE PROCEDURE Compare_Current_to_Bought (
-	IN coin_name INT, 
+	IN coin_name INT,
 	OUT truth_value BOOLEAN
 )
 BEGIN
 	SET @current_price = (
 		SELECT price
 		FROM price_feed
-		WHERE coin = coin_name 
+		WHERE coin = coin_name
 		AND date = (
 			SELECT max(price_feed.date)
 			FROM price_feed, wallets
@@ -133,7 +152,7 @@ BEGIN
 	SET @current_price_on_my_exchange = (
 		SELECT price
 		FROM price_feed
-		WHERE coin = NEW.coin 
+		WHERE coin = NEW.coin
 		AND date = (
 			SELECT max(price_feed.date)
 			FROM price_feed, wallets
@@ -147,9 +166,9 @@ BEGIN
 	IF
 		/*1 You have the NEW.coin in your wallets and the amount (of coin) is more than zero*/
 		NEW.coin IN (
-			SELECT * 
+			SELECT *
 			FROM wallets
-			WHERE wallets.coin = NEW.coin 
+			WHERE wallets.coin = NEW.coin
 			AND amount>0
 		)
 
@@ -157,10 +176,10 @@ BEGIN
 		AND EXISTS (
 			SELECT *
 			FROM wallets
-			WHERE wallets.coin = NEW.coin 
+			WHERE wallets.coin = NEW.coin
 			AND wallets.exchange<>NEW.exchange
 		)
-			
+
 		/*3 The price of coin in your current exchange had to increase or stay the same (so you can make a profit when you sell within the exchange.)*/
 		AND @truth_value = true
 
@@ -171,7 +190,7 @@ BEGIN
 			SET @current_exchange_price = (
 					SELECT price
 					FROM price_feed
-					WHERE coin=NEW.coin 
+					WHERE coin=NEW.coin
 					AND date = (
 						SELECT max(date)
 						FROM price_feed
@@ -190,7 +209,7 @@ BEGIN
 
 			SET @new_amount = (@money_made / NEW.price);
 
-			UPDATE wallets 
+			UPDATE wallets
 			SET wallets.exchange = NEW.exchange, wallets.amount = @new_amount, wallets.price = NEW.price
 			WHERE wallets.coin = NEW.coin;
 	END IF;
@@ -202,11 +221,11 @@ DELIMITER ;
 
 /*
 ## PERSONAL NOTES
-	Viewing the wallets table as the relation describing one (and only one) person's holdings, 
+	Viewing the wallets table as the relation describing one (and only one) person's holdings,
 	the rows correspond to different amount-currency-exchange-price combinations.
 
-	REFERENCING NEW ROW AS new_feed 
-	not allowed to do this in for triggers in Mariadb 10.2 instead have to reference new rows as 
+	REFERENCING NEW ROW AS new_feed
+	not allowed to do this in for triggers in Mariadb 10.2 instead have to reference new rows as
 	NEW and old rows as OLD in the body of the trigger.
 */
 
