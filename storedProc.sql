@@ -8,7 +8,7 @@ BEGIN
 
 	SET @coin_count = (
 		SELECT DISTINCT count(coin_id)
-		FROM coins
+		FROM coinexchanges
 		ORDER BY coin_id
 	);
 
@@ -27,7 +27,7 @@ CALL Init_Wallets();
 UPDATE wallets 
 SET wallets.coin = (
 	SELECT DISTINCT coin_id
-	FROM coins
+	FROM coinexchanges
 	ORDER BY coin_id
 );
 
