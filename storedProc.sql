@@ -64,8 +64,8 @@ DELIMITER //
 
 CREATE PROCEDURE Table_Buy_First_Coin()
 BEGIN
-	SET coin_id = 0;
-	SET cash = 5;
+	SET @coin_id = 1;
+	SET @cash = 5.0 ;
 
 	SET @row_count = (
 		SELECT DISTINCT count(coin)
@@ -75,7 +75,7 @@ BEGIN
 
 	/*using while loop because cursors are read-only in mariadb*/
   	WHILE @coin_id <= @row_count DO
-		Row_Buy_First_Coin(cash, coin_id); /*Problem Line Right Here*/
+		CALL Row_Buy_First_Coin(@cash, @coin_id); /*Problem Line Right Here*/
   		SET @coin_id = @coin_id + 1;
 	END WHILE;
 
@@ -85,8 +85,8 @@ END;
 
 DELIMITER ;
 
-CALL Table_Buy_First_Coin();
 
+CALL Table_Buy_First_Coin();
 
 /*Utility procedure for the trigger Finds whether price of coin in your current exchange increased
 (so you can make a profit when you sell within the exchange.)*/
@@ -213,30 +213,19 @@ DELIMITER ;
 ## TODO
 	-also we need to output to dollars
 	-need to calculate profit from fiat_now and fiat_start
-	-address the errors below
-		- replace the statement on line 27 with some kind of join
-		- see if that addresses downstream problems
+	-fix the error: ERROR 1048 (23000) at line 89 in file: 'storedProc.sql': Column 'amount' cannot be null
+		-Barnett said you could fix the error by setting default values to all attributes where the NULL = NO but Default = NULL 
+			+------------+---------+------+-----+---------+----------------+
+			| Field      | Type    | Null | Key | Default | Extra          |
+			+------------+---------+------+-----+---------+----------------+
+			| exchange   | int(11) | YES  | MUL | NULL    |                |
+			| coin       | int(11) | YES  | MUL | NULL    |                |
+			| price      | float   | NO   |     | NULL    |                |
+			| amount     | float   | NO   |     | NULL    |                |
+			| fiat_now   | float   | NO   |     | NULL    |                |
+			| fiat_start | float   | NO   |     | NULL    |                |
+			| wallet_id  | int(11) | NO   | PRI | NULL    | auto_increment |
+			+------------+---------+------+-----+---------+----------------+
+
 */
-
-/*
-
-ERROR 1452 (23000) at line 124 in file: 'populateDB.sql': Cannot add or update a child row: a foreign key constraint fails (`crypto`.`coinexchanges`, CONSTRAINT `coinexchanges_ibfk_2` FOREIGN KEY (`exchange_id`) REFERENCES `exchanges` (`exchange_id`))
-ERROR 1452 (23000) at line 125 in file: 'populateDB.sql': Cannot add or update a child row: a foreign key constraint fails (`crypto`.`coinexchanges`, CONSTRAINT `coinexchanges_ibfk_2` FOREIGN KEY (`exchange_id`) REFERENCES `exchanges` (`exchange_id`))
-ERROR 1452 (23000) at line 126 in file: 'populateDB.sql': Cannot add or update a child row: a foreign key constraint fails (`crypto`.`coinexchanges`, CONSTRAINT `coinexchanges_ibfk_2` FOREIGN KEY (`exchange_id`) REFERENCES `exchanges` (`exchange_id`))
-ERROR 1452 (23000) at line 127 in file: 'populateDB.sql': Cannot add or update a child row: a foreign key constraint fails (`crypto`.`coinexchanges`, CONSTRAINT `coinexchanges_ibfk_2` FOREIGN KEY (`exchange_id`) REFERENCES `exchanges` (`exchange_id`))
-ERROR 1452 (23000) at line 128 in file: 'populateDB.sql': Cannot add or update a child row: a foreign key constraint fails (`crypto`.`coinexchanges`, CONSTRAINT `coinexchanges_ibfk_2` FOREIGN KEY (`exchange_id`) REFERENCES `exchanges` (`exchange_id`))
-ERROR 1452 (23000) at line 129 in file: 'populateDB.sql': Cannot add or update a child row: a foreign key constraint fails (`crypto`.`coinexchanges`, CONSTRAINT `coinexchanges_ibfk_2` FOREIGN KEY (`exchange_id`) REFERENCES `exchanges` (`exchange_id`))
-ERROR 1452 (23000) at line 130 in file: 'populateDB.sql': Cannot add or update a child row: a foreign key constraint fails (`crypto`.`coinexchanges`, CONSTRAINT `coinexchanges_ibfk_2` FOREIGN KEY (`exchange_id`) REFERENCES `exchanges` (`exchange_id`))
-ERROR 1452 (23000) at line 132 in file: 'populateDB.sql': Cannot add or update a child row: a foreign key constraint fails (`crypto`.`coinexchanges`, CONSTRAINT `coinexchanges_ibfk_2` FOREIGN KEY (`exchange_id`) REFERENCES `exchanges` (`exchange_id`))
-ERROR 1452 (23000) at line 134 in file: 'populateDB.sql': Cannot add or update a child row: a foreign key constraint fails (`crypto`.`coinexchanges`, CONSTRAINT `coinexchanges_ibfk_2` FOREIGN KEY (`exchange_id`) REFERENCES `exchanges` (`exchange_id`))
-ERROR 1054 (42S22) at line 156 in file: 'populateDB.sql': Unknown column 'type' in 'field list'
-Query OK, 0 rows affected (0.01 sec)
-
-Query OK, 1 row affected (0.33 sec)
-
-ERROR 1242 (21000) at line 27 in file: 'storedProc.sql': Subquery returns more than 1 row
-Query OK, 0 rows affected (0.01 sec)
-
-ERROR 1193 (HY000) at line 66 in file: 'storedProc.sql': Unknown system variable 'coin_id'
-ERROR 1305 (42000) at line 89 in file: 'storedProc.sql': PROCEDURE crypto.Table_Buy_First_Coin does not exist
 
