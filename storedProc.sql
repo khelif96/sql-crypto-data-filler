@@ -49,10 +49,17 @@ BEGIN
 		)
 	);
 
+	SET @buy_exchange = (
+		SELECT exchange
+		FROM price_feed
+		WHERE price_feed.coin = coin_type
+		AND price = @buy_price
+	);
+
 	SET @amount = cash / @buy_price;
 
 	UPDATE wallets 
-		SET wallets.amount = @amount
+		SET wallets.amount = @amount, wallets.exchange = @buy_exchange, wallets.price = @buy_price, wallets.fiat_now = 0
 		WHERE wallets.coin = coin_type;
 END;
 //
@@ -70,7 +77,6 @@ BEGIN
 	SET @row_count = (
 		SELECT DISTINCT count(coin)
 		FROM wallets
-		ORDER BY coin
 	);
 
 	/*using while loop because cursors are read-only in mariadb*/
@@ -78,15 +84,14 @@ BEGIN
 		CALL Row_Buy_First_Coin(@cash, @coin_id); /*Problem Line Right Here*/
   		SET @coin_id = @coin_id + 1;
 	END WHILE;
-
-	UPDATE wallets SET wallets.fiat_now = 0;
 END;
 //
 
 DELIMITER ;
 
 
-CALL Table_Buy_First_Coin();
+CALL Table_Buy_First_Coin(); --ERROR 1242 (21000) at line 88 in file: 'storedProc.sql': Subquery returns more than 1 row
+
 
 /*Utility procedure for the trigger Finds whether price of coin in your current exchange increased
 (so you can make a profit when you sell within the exchange.)*/
@@ -213,19 +218,9 @@ DELIMITER ;
 ## TODO
 	-also we need to output to dollars
 	-need to calculate profit from fiat_now and fiat_start
-	-fix the error: ERROR 1048 (23000) at line 89 in file: 'storedProc.sql': Column 'amount' cannot be null
-		-Barnett said you could fix the error by setting default values to all attributes where the NULL = NO but Default = NULL 
-			+------------+---------+------+-----+---------+----------------+
-			| Field      | Type    | Null | Key | Default | Extra          |
-			+------------+---------+------+-----+---------+----------------+
-			| exchange   | int(11) | YES  | MUL | NULL    |                |
-			| coin       | int(11) | YES  | MUL | NULL    |                |
-			| price      | float   | NO   |     | NULL    |                |
-			| amount     | float   | NO   |     | NULL    |                |
-			| fiat_now   | float   | NO   |     | NULL    |                |
-			| fiat_start | float   | NO   |     | NULL    |                |
-			| wallet_id  | int(11) | NO   | PRI | NULL    | auto_increment |
-			+------------+---------+------+-----+---------+----------------+
+	-the price_feed table is empty so when I try to query it to initialize the first trade, It returns NUll. 
+		that NULL is then passed on to calculating @amount which then means calling the function Row_Buy_First_Coin
+		results in the ERROR 1048 (23000) at line 89 in file: 'storedProc.sql': Column 'amount' cannot be null.
+	- how is it the price feed is populated? by npm start?
 
 */
-
