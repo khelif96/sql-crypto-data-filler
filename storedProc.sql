@@ -46,7 +46,9 @@ BEGIN
 			SELECT min(price)
 			FROM price_feed
 			WHERE price_feed.coin = coin_type
+			LIMIT 1
 		)
+		LIMIT 1
 	);
 
 	SET @buy_exchange = (
@@ -54,6 +56,7 @@ BEGIN
 		FROM price_feed
 		WHERE price_feed.coin = coin_type
 		AND price = @buy_price
+		LIMIT 1
 	);
 
 	SET @amount = cash / @buy_price;
