@@ -1,5 +1,5 @@
-DELETE FROM coins; 
-DELETE FROM exchanges; 
+DELETE FROM coins;
+DELETE FROM exchanges;
 DELETE FROM coinexchanges ;
 
 insert into coins(symbol,name) values('BTC','Bitcoin');
@@ -82,16 +82,16 @@ insert into coinexchanges(coin_id,exchange_id) values (18,4);
 
 
 
-insert into coinexchanges(coin_id,exchange_id) values (1,7);
-insert into coinexchanges(coin_id,exchange_id) values (2,7);
-insert into coinexchanges(coin_id,exchange_id) values (4,7);
-insert into coinexchanges(coin_id,exchange_id) values (5,7);
-insert into coinexchanges(coin_id,exchange_id) values (6,7);
-insert into coinexchanges(coin_id,exchange_id) values (8,7);
-insert into coinexchanges(coin_id,exchange_id) values (9,7);
-insert into coinexchanges(coin_id,exchange_id) values (10,7);
-insert into coinexchanges(coin_id,exchange_id) values (11,7);
-insert into coinexchanges(coin_id,exchange_id) values (12,7);
-insert into coinexchanges(coin_id,exchange_id) values (14,7);
-insert into coinexchanges(coin_id,exchange_id) values (15,7);
-insert into coinexchanges(coin_id,exchange_id) values (19,7);
+-- insert into coinexchanges(coin_id,exchange_id) values (1,7);
+-- insert into coinexchanges(coin_id,exchange_id) values (2,7);
+-- insert into coinexchanges(coin_id,exchange_id) values (4,7);
+-- insert into coinexchanges(coin_id,exchange_id) values (5,7);
+-- insert into coinexchanges(coin_id,exchange_id) values (6,7);
+-- insert into coinexchanges(coin_id,exchange_id) values (8,7);
+-- insert into coinexchanges(coin_id,exchange_id) values (9,7);
+-- insert into coinexchanges(coin_id,exchange_id) values (10,7);
+-- insert into coinexchanges(coin_id,exchange_id) values (11,7);
+-- insert into coinexchanges(coin_id,exchange_id) values (12,7);
+-- insert into coinexchanges(coin_id,exchange_id) values (14,7);
+-- insert into coinexchanges(coin_id,exchange_id) values (15,7);
+-- insert into coinexchanges(coin_id,exchange_id) values (19,7);
