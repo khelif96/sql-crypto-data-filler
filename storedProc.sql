@@ -135,7 +135,7 @@ DELIMITER //
 
 CREATE PROCEDURE Profit_Calculator (
 	IN coin_name INT, 
-	OUT @profit FLOAT
+	OUT profit FLOAT
 )
 BEGIN
 	SET @current_price = (
@@ -156,7 +156,7 @@ BEGIN
 		WHERE coin = coin_name
 	);
 
-	SET @profit = @current_price - @price_bought;
+	SET profit = @current_price - @price_bought;
     
 END;
 //
