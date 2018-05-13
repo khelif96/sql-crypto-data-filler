@@ -69,7 +69,6 @@ END;
 
 DELIMITER ;
 
-
 DELIMITER //
 
 CREATE PROCEDURE Table_Buy_First_Coin()
@@ -93,8 +92,7 @@ END;
 DELIMITER ;
 
 
-CALL Table_Buy_First_Coin(); --ERROR 1242 (21000) at line 88 in file: 'storedProc.sql': Subquery returns more than 1 row
-
+CALL Table_Buy_First_Coin();
 
 /*Utility procedure for the trigger Finds whether price of coin in your current exchange increased
 (so you can make a profit when you sell within the exchange.)*/
@@ -127,8 +125,37 @@ BEGIN
 END;
 //
 
-DELIMITER ; -- watch out. you need a space between the delimter and the semi-colon. No idea why. It's on the maraidb documentation though.
+DELIMITER ;
 
+
+DELIMITER //
+
+CREATE PROCEDURE profit_calculator ( IN coin_name INT, OUT profit FLOAT)
+BEGIN
+	SET @fiat_start = (
+		SELECT fiat_start
+		FROM wallets
+		WHERE coin = coin_name 
+	);
+
+	SET @fiat_now = (
+		SELECT fiat_now
+		FROM wallets
+		WHERE coin = coin_name
+	);
+
+	IF 
+            @fiat_start = 0
+        THEN 
+            SET profit = 100 * @fiat_now;
+    ELSE
+            SET profit = 100 * ( (@fiat_now -@fiat_start) / @fiat_start);
+
+	END IF;
+END;
+//
+
+DELIMITER ;
 
 
 /*The Trading Algoritm*/
@@ -208,7 +235,8 @@ DELIMITER ;
 
 /*This procedure finds the max price for a given coin across all exchanges
 Beside fiat_now, exchange and price are also updated to reflect the max available price of the coin
-across the exchanges*/
+across the exchanges
+*/
 DELIMITER //
 
 CREATE PROCEDURE Sell_Coin (
@@ -228,6 +256,19 @@ BEGIN
 		LIMIT 1
 	);
 
+	SET @priceFeed_id = (
+		SELECT priceFeed_id
+		FROM price_feed
+		WHERE price_feed.coin = coin_type
+		AND price = (
+			SELECT max(price)
+			FROM price_feed
+			WHERE price_feed.coin = coin_type
+			LIMIT 1
+		)
+		LIMIT 1
+	);
+
 	SET @sell_exchange = (
 		SELECT exchange
 		FROM price_feed
@@ -236,9 +277,23 @@ BEGIN
 		LIMIT 1
 	);
 
+
 	UPDATE wallets 
 		SET wallets.exchange = @sell_exchange, wallets.price = @sell_price, wallets.fiat_now = wallets.amount * @sell_price, wallets.amount = 0
 		WHERE wallets.coin = coin_type;
+
+	SET @originWallet = (
+		SELECT wallet_id
+		FROM wallets
+		WHERE wallets.coin = coin_type
+		AND wallets.exchange = @sell_exchange
+		LIMIT 1
+	);
+
+	SET @transactionQty = 1;
+	SET @transactionTotal = 1;
+
+	INSERT INTO transactions (type, transactionPrice, transactionQty, transactionTotal, priceFeed_id, originWallet, destinationWallet) VALUES ('Sell', @sell_price, @transactionQty, @transactionTotal, @priceFeed_id, @originWallet, @originWallet);
 END;
 //
 
@@ -277,16 +332,11 @@ DELIMITER ;
 
 /*
 ## TODO
-	-also we need to output to dollars
-	-need to calculate profit from fiat_now and fiat_start
+	-also we need to output to dollars [Done]
+	-need to calculate profit from fiat_now and fiat_start [Done]
 	-the price_feed table is empty so when I try to query it to initialize the first trade, It returns NUll. 
 		that NULL is then passed on to calculating @amount which then means calling the function Row_Buy_First_Coin
 		results in the ERROR 1048 (23000) at line 89 in file: 'storedProc.sql': Column 'amount' cannot be null.
 	- how is it the price feed is populated? by npm start?
 
 */
-
-
-
-
-
