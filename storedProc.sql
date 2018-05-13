@@ -69,7 +69,6 @@ END;
 
 DELIMITER ;
 
-
 DELIMITER //
 
 CREATE PROCEDURE Table_Buy_First_Coin()
@@ -93,8 +92,7 @@ END;
 DELIMITER ;
 
 
-CALL Table_Buy_First_Coin(); --ERROR 1242 (21000) at line 88 in file: 'storedProc.sql': Subquery returns more than 1 row
-
+CALL Table_Buy_First_Coin();
 
 /*Utility procedure for the trigger Finds whether price of coin in your current exchange increased
 (so you can make a profit when you sell within the exchange.)*/
@@ -127,16 +125,12 @@ BEGIN
 END;
 //
 
-DELIMITER ; -- watch out. you need a space between the delimter and the semi-colon. No idea why. It's on the maraidb documentation though.
+DELIMITER ;
 
-/* our PRofit calculator*/
 
 DELIMITER //
 
-CREATE PROCEDURE Profit_Calculator (
-	IN coin_name INT, 
-	OUT profit FLOAT
-)
+CREATE PROCEDURE profit_calculator ( IN coin_name INT, OUT profit FLOAT)
 BEGIN
 	SET @fiat_start = (
 		SELECT fiat_start
@@ -155,11 +149,13 @@ BEGIN
         THEN 
             SET profit = 100 * @fiat_now;
     ELSE
-            SET profit = 100 * ((@fiat_now-@fiat_start) / @fiat_start);
+            SET profit = 100 * ( (@fiat_now -@fiat_start) / @fiat_start);
+
+	END IF;
 END;
 //
 
-DELIMITER ; -- watch out. you need a space between the delimter and the semi-colon. No idea why. It's on the maraidb documentation though.
+DELIMITER ;
 
 
 /*The Trading Algoritm*/
