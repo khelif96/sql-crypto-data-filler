@@ -294,6 +294,11 @@ BEGIN
 	SET @transactionTotal = 1;
 
 	INSERT INTO transactions (type, transactionPrice, transactionQty, transactionTotal, priceFeed_id, originWallet, destinationWallet) VALUES ('Sell', @sell_price, @transactionQty, @transactionTotal, @priceFeed_id, @originWallet, @originWallet);
+
+    UPDATE 
+        wallets SET exchange = DEFAULT(exchange), price = DEFAULT(price) 
+        WHERE 
+            exchange = @sell_exchange AND coin = coin_type;
 END;
 //
 
