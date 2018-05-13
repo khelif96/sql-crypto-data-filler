@@ -138,26 +138,24 @@ CREATE PROCEDURE Profit_Calculator (
 	OUT profit FLOAT
 )
 BEGIN
-	SET @current_price = (
-		SELECT price
-		FROM price_feed
+	SET @fiat_start = (
+		SELECT fiat_start
+		FROM wallets
 		WHERE coin = coin_name 
-		AND date = (
-			SELECT max(price_feed.date)
-			FROM price_feed, wallets
-			WHERE price_feed.exchange = wallets.exchange
-			AND price_feed.coin = coin_name
-		)
 	);
 
-	SET @price_bought = (
-		SELECT price
+	SET @fiat_now = (
+		SELECT fiat_now
 		FROM wallets
 		WHERE coin = coin_name
 	);
 
-	SET profit = @current_price - @price_bought;
-    
+	IF 
+            @fiat_start = 0
+        THEN 
+            SET profit = 100 * @fiat_now;
+    ELSE
+            SET profit = 100 * ((@fiat_now-@fiat_start) / @fiat_start);
 END;
 //
 
