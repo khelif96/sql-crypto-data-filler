@@ -206,6 +206,61 @@ END;
 
 DELIMITER ;
 
+DELIMITER //
+
+CREATE PROCEDURE Sell_Coin (
+	IN coin_type INT 
+)
+BEGIN
+	SET @sell_price = (
+		SELECT price
+		FROM price_feed
+		WHERE price_feed.coin = coin_type
+		AND price = (
+			SELECT max(price)
+			FROM price_feed
+			WHERE price_feed.coin = coin_type
+			LIMIT 1
+		)
+		LIMIT 1
+	);
+
+	SET @sell_exchange = (
+		SELECT exchange
+		FROM price_feed
+		WHERE price_feed.coin = coin_type
+		AND price = @sell_price
+		LIMIT 1
+	);
+
+	UPDATE wallets 
+		SET wallets.exchange = @sell_exchange, wallets.price = @sell_price, wallets.fiat_now = wallets.amount * @sell_price, wallets.amount = 0
+		WHERE wallets.coin = coin_type;
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE PROCEDURE Cash_Out()
+BEGIN
+	SET @coin_id = 1;
+
+	SET @total_coin = (
+		SELECT count(coin)
+		FROM wallets
+	);
+
+  	WHILE @coin_id <= @total_coin DO
+		CALL Sell_Coin(@coin_id);
+  		SET @coin_id = @coin_id + 1;
+	END WHILE;
+END;
+//
+
+DELIMITER ;
 
 /*
 ## PERSONAL NOTES
@@ -227,3 +282,8 @@ DELIMITER ;
 	- how is it the price feed is populated? by npm start?
 
 */
+
+
+
+
+
