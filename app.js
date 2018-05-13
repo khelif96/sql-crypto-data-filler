@@ -9,7 +9,7 @@ try{
   process.exit(1);
 }
 
-var refreshInterval = 1000*10 // 1000 ms = 1 second  default: 1000*60*5 = 5 minutes
+var refreshInterval = 1000 // 1000 ms = 1 second  default: 1000*60*5 = 5 minutes
 
 if(process.env.host == undefined || process.env.user == undefined || process.env.password == undefined){
   console.error("Could not find all the required enviromental variables");
@@ -36,7 +36,7 @@ if(process.env.host == undefined || process.env.user == undefined || process.env
     var sql = "select * from V_coinexchanges";
     var loopable = true;
 
-      setInterval(function(){
+      // setInterval(function(){
         con.query(sql, function(err,result){
           if(err) throw err;
           for (var row in result) {
@@ -54,7 +54,7 @@ if(process.env.host == undefined || process.env.user == undefined || process.env
 
 
         })
-      },refreshInterval);
+      // },refreshInterval);
 
   })
 }
