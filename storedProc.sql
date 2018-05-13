@@ -233,6 +233,92 @@ END;
 
 DELIMITER ;
 
+/*This procedure finds the max price for a given coin across all exchanges
+Beside fiat_now, exchange and price are also updated to reflect the max available price of the coin
+across the exchanges
+*/
+DELIMITER //
+
+CREATE PROCEDURE Sell_Coin (
+	IN coin_type INT 
+)
+BEGIN
+	SET @sell_price = (
+		SELECT price
+		FROM price_feed
+		WHERE price_feed.coin = coin_type
+		AND price = (
+			SELECT max(price)
+			FROM price_feed
+			WHERE price_feed.coin = coin_type
+			LIMIT 1
+		)
+		LIMIT 1
+	);
+
+	SET @priceFeed_id = (
+		SELECT priceFeed_id
+		FROM price_feed
+		WHERE price_feed.coin = coin_type
+		AND price = (
+			SELECT max(price)
+			FROM price_feed
+			WHERE price_feed.coin = coin_type
+			LIMIT 1
+		)
+		LIMIT 1
+	);
+
+	SET @sell_exchange = (
+		SELECT exchange
+		FROM price_feed
+		WHERE price_feed.coin = coin_type
+		AND price = @sell_price
+		LIMIT 1
+	);
+
+
+	UPDATE wallets 
+		SET wallets.exchange = @sell_exchange, wallets.price = @sell_price, wallets.fiat_now = wallets.amount * @sell_price, wallets.amount = 0
+		WHERE wallets.coin = coin_type;
+
+	SET @originWallet = (
+		SELECT wallet_id
+		FROM wallets
+		WHERE wallets.coin = coin_type
+		AND wallets.exchange = @sell_exchange
+		LIMIT 1
+	);
+
+	SET @transactionQty = 1;
+	SET @transactionTotal = 1;
+
+	INSERT INTO transactions (type, transactionPrice, transactionQty, transactionTotal, priceFeed_id, originWallet, destinationWallet) VALUES ('Sell', @sell_price, @transactionQty, @transactionTotal, @priceFeed_id, @originWallet, @originWallet);
+END;
+//
+
+DELIMITER ;
+
+/*Calls Sell_Coin(coin_type) for all coins in the wallets */
+DELIMITER //
+
+CREATE PROCEDURE Cash_Out()
+BEGIN
+	SET @coin_id = 1;
+
+	SET @total_coin = (
+		SELECT count(coin)
+		FROM wallets
+	);
+
+  	WHILE @coin_id <= @total_coin DO
+		CALL Sell_Coin(@coin_id);
+  		SET @coin_id = @coin_id + 1;
+	END WHILE;
+END;
+//
+
+DELIMITER ;
 
 /*
 ## PERSONAL NOTES
@@ -246,8 +332,8 @@ DELIMITER ;
 
 /*
 ## TODO
-	-also we need to output to dollars
-	-need to calculate profit from fiat_now and fiat_start
+	-also we need to output to dollars [Done]
+	-need to calculate profit from fiat_now and fiat_start [Done]
 	-the price_feed table is empty so when I try to query it to initialize the first trade, It returns NUll. 
 		that NULL is then passed on to calculating @amount which then means calling the function Row_Buy_First_Coin
 		results in the ERROR 1048 (23000) at line 89 in file: 'storedProc.sql': Column 'amount' cannot be null.
