@@ -206,6 +206,9 @@ END;
 
 DELIMITER ;
 
+/*This procedure finds the max price for a given coin across all exchanges
+Beside fiat_now, exchange and price are also updated to reflect the max available price of the coin
+across the exchanges*/
 DELIMITER //
 
 CREATE PROCEDURE Sell_Coin (
@@ -241,7 +244,7 @@ END;
 
 DELIMITER ;
 
-
+/*Calls Sell_Coin(coin_type) for all coins in the wallets */
 DELIMITER //
 
 CREATE PROCEDURE Cash_Out()
