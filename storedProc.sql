@@ -129,6 +129,39 @@ END;
 
 DELIMITER ; -- watch out. you need a space between the delimter and the semi-colon. No idea why. It's on the maraidb documentation though.
 
+/* our PRofit calculator*/
+
+DELIMITER //
+
+CREATE PROCEDURE Profit_Calculator (
+	IN coin_name INT, 
+	OUT @profit FLOAT
+)
+BEGIN
+	SET @current_price = (
+		SELECT price
+		FROM price_feed
+		WHERE coin = coin_name 
+		AND date = (
+			SELECT max(price_feed.date)
+			FROM price_feed, wallets
+			WHERE price_feed.exchange = wallets.exchange
+			AND price_feed.coin = coin_name
+		)
+	);
+
+	SET @price_bought = (
+		SELECT price
+		FROM wallets
+		WHERE coin = coin_name
+	);
+
+	SET @profit = @current_price - @price_bought;
+    
+END;
+//
+
+DELIMITER ; -- watch out. you need a space between the delimter and the semi-colon. No idea why. It's on the maraidb documentation though.
 
 
 /*The Trading Algoritm*/
