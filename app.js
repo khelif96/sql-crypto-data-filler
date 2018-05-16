@@ -62,6 +62,7 @@ if(process.env.host == undefined || process.env.user == undefined || process.env
 function getPrices(coinExchanges){
   var ecount = 0;
   console.log("Found " + coinExchanges.length + " coinExchange pairs");
+  var completedCount = 0;
   for (let i = 0;i<coinExchanges.length; i++) {
     var url = "https://min-api.cryptocompare.com/data/pricemulti?fsyms=" + coinExchanges[i].symbol + "&tsyms=USD&e="+ coinExchanges[i].exchangeName;
     // console.log(url);
@@ -70,7 +71,6 @@ function getPrices(coinExchanges){
       // console.log("Recieved Response");
       // console.log(JSON.stringify(response.data));
       for (var coin in response.data) {
-
         if(coinExchanges[i].coin_id == undefined || response.data[coin].USD  == undefined || coinExchanges[i].exchange_id == undefined){
           console.log("Skipping insert got undefined value on coin_id "+ coinExchanges[i].coin_id  + " USD " + response.data[coin].USD + " exchange id " + coinExchanges[i].exchange_id );
         }else{
@@ -78,7 +78,14 @@ function getPrices(coinExchanges){
           con.query(sqlInsert, function(err,result){
             if(err) throw err;
             console.log(sqlInsert);
-
+            if(completedCount == coinExchanges.length - 1){
+              console.log("Completed Insertions");
+              console.log("ecount " + ecount);
+              con.end();
+              process.exit(0);
+            }else{
+              completedCount++;
+            }
           })
         }
       }
@@ -88,11 +95,10 @@ function getPrices(coinExchanges){
     .catch(error => {
       console.log("ERROR " + error);
       ecount++;
-      console.log(ecount)
+      completedCount++;
     });
 
     // console.log("Loop " + i);
   }
-  console.log("Completed Insertions");
-  console.log("ecount " + ecount)
+
 }
